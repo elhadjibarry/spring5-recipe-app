@@ -1,12 +1,15 @@
 package guru.springframework.services;
 
 import guru.springframework.commands.IngredientCommand;
+import guru.springframework.commands.UnitOfMeasureCommand;
 import guru.springframework.converters.IngredientCommandToIngredient;
 import guru.springframework.converters.IngredientToIngredientCommand;
 import guru.springframework.converters.UnitOfMeasureCommandToUnitOfMeasure;
 import guru.springframework.converters.UnitOfMeasureToUnitOfMeasureCommand;
 import guru.springframework.domain.Ingredient;
 import guru.springframework.domain.Recipe;
+import guru.springframework.domain.UnitOfMeasure;
+import guru.springframework.repositories.IngredientRepository;
 import guru.springframework.repositories.RecipeRepository;
 import guru.springframework.repositories.UnitOfMeasureRepository;
 import org.junit.Before;
@@ -38,13 +41,16 @@ public class IngredientServiceTest {
     @Mock
     UnitOfMeasureRepository unitOfMeasureRepository;
 
+    @Mock
+    IngredientRepository ingredientRepository;
+
     IngredientService ingredientService;
 
     @Before
     public void setUp() throws Exception {
         ingredientToIngredientCommand = new IngredientToIngredientCommand(new UnitOfMeasureToUnitOfMeasureCommand());
         ingredientCommandToIngredient = new IngredientCommandToIngredient(new UnitOfMeasureCommandToUnitOfMeasure());
-        ingredientService = new IngredientServiceImpl(ingredientToIngredientCommand, ingredientCommandToIngredient, recipeRepository, unitOfMeasureRepository);
+        ingredientService = new IngredientServiceImpl(ingredientToIngredientCommand, ingredientCommandToIngredient, recipeRepository, unitOfMeasureRepository, ingredientRepository);
     }
 
     @Test
@@ -80,24 +86,31 @@ public class IngredientServiceTest {
     @Test
     public void saveRecipeCommand() {
         //given
+        UnitOfMeasureCommand unitOfMeasureCommand = new UnitOfMeasureCommand();
+        unitOfMeasureCommand.setId(1L);
+
         IngredientCommand ingredientCommand = new IngredientCommand();
         ingredientCommand.setId(3L);
         ingredientCommand.setRecipeId(2L);
+        ingredientCommand.setUnitOfMeasure(unitOfMeasureCommand);
 
-        Optional<Recipe> recipeOptional = Optional.of(new Recipe());
-
-        Recipe savedRecipe = new Recipe();
         Ingredient ingredient = new Ingredient();
         ingredient.setId(3L);
-        savedRecipe.addIngredient(ingredient);
+
+        Recipe recipe = new Recipe();
+        recipe.setId(2L);
+        recipe.addIngredient(ingredient);
+
+        Optional<Recipe> recipeOptional = Optional.of(recipe);
 
         //when
         when(recipeRepository.findById(anyLong())).thenReturn(recipeOptional);
-        when(recipeRepository.save(any())).thenReturn(savedRecipe);
+        when(unitOfMeasureRepository.findById(anyLong())).thenReturn(Optional.of(new UnitOfMeasure()));
+        when(ingredientRepository.save(any())).thenReturn(ingredient);
         IngredientCommand savedIngredientCommand = ingredientService.saveIngredientCommand(ingredientCommand);
 
         assertThat(savedIngredientCommand.getId()).isEqualTo(3L);
         verify(recipeRepository).findById(anyLong());
-        verify(recipeRepository).save(any(Recipe.class));
+        verify(ingredientRepository).save(any(Ingredient.class));
     }
 }
