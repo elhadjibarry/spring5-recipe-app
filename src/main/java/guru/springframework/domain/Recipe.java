@@ -54,4 +54,9 @@ public class Recipe {
         this.ingredients.add(ingredient);
         return this;
     }
+
+    public void remove(Ingredient ingredient) {
+        ingredient.setRecipe(null);
+        this.ingredients.remove(ingredient);
+    }
 }

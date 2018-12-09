@@ -82,4 +82,24 @@ public class IngredientServiceImpl implements IngredientService {
             throw new RuntimeException("Unkown recipe id " + ingredientCommand.getRecipeId());
         }
     }
+
+    @Override
+    @Transactional
+    public void deleteByRecipeIdAndIngredientId(Long recipeId, Long ingredientId) {
+
+        Recipe recipe = recipeRepository.findById(recipeId).orElse(null);
+
+        if (recipe != null) {
+            Ingredient ingredientToDelete = recipe.getIngredients()
+                    .stream()
+                    .filter(ingredient -> ingredient.getId().equals(ingredientId))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Unkown ingredient id " + ingredientId));
+
+            recipe.remove(ingredientToDelete);
+            recipeRepository.save(recipe);
+        } else {
+            throw new RuntimeException("Unkown recipe id " + recipeId);
+        }
+    }
 }

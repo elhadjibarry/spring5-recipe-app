@@ -113,4 +113,33 @@ public class IngredientServiceTest {
         verify(recipeRepository).findById(anyLong());
         verify(ingredientRepository).save(any(Ingredient.class));
     }
+
+    @Test
+    public void deleteByRecipeIdAndIngredientId() {
+
+        //given
+        Recipe recipe = new Recipe();
+        recipe.setId(1L);
+
+        Ingredient ingredient1 = new Ingredient();
+        ingredient1.setId(1L);
+
+        Ingredient ingredient2 = new Ingredient();
+        ingredient2.setId(2L);
+
+        Ingredient ingredient3 = new Ingredient();
+        ingredient3.setId(3L);
+
+        recipe.addIngredient(ingredient1);
+        recipe.addIngredient(ingredient2);
+        recipe.addIngredient(ingredient3);
+
+        //when
+        when(recipeRepository.findById(anyLong())).thenReturn(java.util.Optional.ofNullable(recipe));
+        ingredientService.deleteByRecipeIdAndIngredientId(1L, 3L);
+
+        //then
+        verify(recipeRepository).findById(anyLong());
+        verify(recipeRepository).save(any());
+    }
 }
