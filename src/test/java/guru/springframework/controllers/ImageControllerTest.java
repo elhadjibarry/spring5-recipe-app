@@ -1,5 +1,6 @@
 package guru.springframework.controllers;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.verify;
@@ -18,6 +19,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -78,6 +80,34 @@ public class ImageControllerTest {
 
         //then
         verify(imageService).saveImageFile(anyLong(), any());
+    }
+
+    @Test
+    public void getImageFromDatabase() throws Exception {
+        //given
+        RecipeCommand recipeCommand = new RecipeCommand();
+        recipeCommand.setId(1L);
+
+        String s = "fake image text";
+        Byte[] imageBytes = new Byte[s.getBytes().length];
+        int i = 0;
+
+        for(byte b : s.getBytes()) {
+            imageBytes[i++] = b;
+        }
+
+        recipeCommand.setImage(imageBytes);
+
+        //when
+        when(recipeService.findCommandById(anyLong())).thenReturn(recipeCommand);
+        MockHttpServletResponse response = mockMvc.perform(get("/recipe/1/recipeimage"))
+                                                                               .andExpect(status().isOk())
+                                                                               .andReturn()
+                                                                               .getResponse();
+
+        //then
+        assertThat(response.getContentAsByteArray().length).isEqualTo(s.getBytes().length);
+        verify(recipeService).findCommandById(anyLong());
     }
 
 }
