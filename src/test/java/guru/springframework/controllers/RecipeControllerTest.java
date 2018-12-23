@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class RecipeControllerTest {
 
+    public static final String RECIPE_RECIPEFORM = "recipe/recipeform";
     @Mock
     RecipeService recipeService;
 
@@ -111,10 +112,25 @@ public class RecipeControllerTest {
 
         //then
         mockMvc.perform(post("/recipe").contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                       .param("id","")
-                       .param("description", "some string"))
-               .andExpect(status().is3xxRedirection())
-               .andExpect(view().name("redirect:/recipe/2/show"));
+                        .param("id","")
+                        .param("description", "some string")
+                        .param("url", "http://test.url.com")
+                        .param("directions", "some string"))
+                        .andExpect(status().is3xxRedirection())
+                        .andExpect(view().name("redirect:/recipe/2/show"));
+    }
+
+    @Test
+    public void postNewRecipeFormValidationFails() throws Exception {
+
+        //then
+        mockMvc.perform(post("/recipe").contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("id","")
+                .param("description", "some string"))
+                .andExpect(status().isOk())
+                .andExpect(view().name(RECIPE_RECIPEFORM));
+
+        verifyZeroInteractions(recipeService);
     }
 
     @Test
